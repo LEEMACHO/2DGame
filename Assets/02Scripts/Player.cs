@@ -6,9 +6,16 @@ using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour
 {
+    public float health;
+
     public float speed;
     public float jumpPower;
     public Vector2 inputVec;
+    public float jumpdelay;
+
+
+    bool isFloor;
+    bool isDoubleJump;
 
     Rigidbody2D rigid;
     SpriteRenderer spriter;
@@ -25,13 +32,22 @@ public class Player : MonoBehaviour
     {
         Move();
         Jump();
+        Flipx();
     }
 
     private void FixedUpdate()
     {
-        //isJump();
+        //Isfloor();
     }
 
+
+    void Flipx()
+    {
+        if (inputVec.x != 0)
+        {
+            spriter.flipX = inputVec.x < 0;
+        }
+    }
 
     void Move()
     {
@@ -40,10 +56,6 @@ public class Player : MonoBehaviour
         anim.SetBool("isRun", true);
 
         inputVec = new Vector2(moveInput * speed, rigid.velocity.y).normalized;
-        if (inputVec.x != 0)
-        {
-            spriter.flipX = inputVec.x < 0;
-        }
 
         if (inputVec == Vector2.zero)
             anim.SetBool("isRun", false);
@@ -51,29 +63,46 @@ public class Player : MonoBehaviour
 
     void Jump()
     {
-        if(Input.GetButtonDown("Jump"))
+        if (rigid.velocity.y == 0 || (rigid.velocity.y != 0 && !anim.GetBool("Jump")))
+        {
+            isFloor = true;
+            anim.SetBool("Jump", false);
+        }
+        else
+            isFloor = false;
+
+        if (isFloor)
+            isDoubleJump = true;
+
+
+        if (Input.GetButtonDown("Jump") && !anim.GetBool("Jump") && isFloor )
         {
             rigid.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
+            anim.SetBool("Jump",true);
 
-            anim.SetTrigger("Jump");
+            isDoubleJump = true;
+        }
+        else if (Input.GetButtonDown("Jump")&& anim.GetBool("Jump") && isDoubleJump)
+        {
+            rigid.velocity = Vector2.zero;
+            rigid.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
+            anim.SetTrigger("DoubleJump");
+
+            isDoubleJump = false;
         }
     }
 
-    void isJump()
+    private void OnTriggerEnter2D(Collider2D collision)
     {
-        if(rigid.velocity.y < 0)
+        if (collision.CompareTag("OutLine"))
         {
-            Debug.DrawRay(rigid.position, Vector3.down, Color.green);
-            RaycastHit2D rayHit = Physics2D.Raycast(rigid.position, Vector3.down, 1, LayerMask.GetMask("Floor"));
-            if(rayHit.collider != null)
+            StageManager.instance.Retry();
+            health--;
+            if(health == 0)
             {
-                if(rayHit.distance < 0.3f)
-                {
-                    anim.SetBool("isJump", false);
-                }
+                Debug.Log("게임 종료");
             }
         }
     }
-
 
 }

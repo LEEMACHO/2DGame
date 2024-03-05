@@ -10,10 +10,7 @@ public class StageCtr : MonoBehaviour
     {
         if(collision.CompareTag("Player"))
         {
-            //GameManager.instance.PlayerSpawn();
-
-            //GameManager.instance.CameraSet();
-
+            StageManager.instance.PlayerSpawn();
         }
     }
 }

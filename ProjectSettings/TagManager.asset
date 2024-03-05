@@ -5,6 +5,10 @@ TagManager:
   serializedVersion: 2
   tags:
   - NextRoom
+  - Floor
+  - StageEnd
+  - Trap
+  - OutLine
   layers:
   - Default
   - TransparentFX
