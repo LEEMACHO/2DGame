@@ -9,6 +9,7 @@ TagManager:
   - StageEnd
   - Trap
   - OutLine
+  - Trampoline
   layers:
   - Default
   - TransparentFX

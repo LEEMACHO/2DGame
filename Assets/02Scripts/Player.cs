@@ -16,6 +16,7 @@ public class Player : MonoBehaviour
 
     bool isFloor;
     bool isDoubleJump;
+    bool isDamage;
 
     Rigidbody2D rigid;
     SpriteRenderer spriter;
@@ -103,6 +104,30 @@ public class Player : MonoBehaviour
                 Debug.Log("게임 종료");
             }
         }
+        else if(collision.CompareTag("Trap") && !isDamage)
+        {
+            StartCoroutine(OnDamage());
+        }
+        else if(collision.CompareTag("Trampoline"))
+        {
+            anim.SetBool("Jump", false);
+            rigid.velocity = Vector2.zero;
+            rigid.AddForce(transform.up * 20, ForceMode2D.Impulse);
+
+        }
+    }
+
+    IEnumerator OnDamage()
+    {
+
+        anim.SetTrigger("Hit");
+        isDamage = true;
+        health--;
+
+
+        yield return new WaitForSeconds(0.5f);
+
+        isDamage = false;
     }
 
 }
