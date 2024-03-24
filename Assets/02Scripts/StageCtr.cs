@@ -10,7 +10,7 @@ public class StageCtr : MonoBehaviour
     {
         if(collision.CompareTag("Player"))
         {
-            StageManager.instance.PlayerSpawn();
+            GameManager.instance.PlayerSpawn();
         }
     }
 }

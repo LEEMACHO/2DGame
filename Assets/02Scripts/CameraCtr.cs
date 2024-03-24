@@ -5,18 +5,18 @@ using UnityEngine;
 public class CameraCtr : MonoBehaviour
 {
     [SerializeField]
-    Transform playerTransform;
+    Transform               playerTransform;
     [SerializeField]
-    Vector3 cameraPosition;
+    Vector3                 cameraPosition;
 
-    public Vector3 center;
+    public Vector3          center;
     [SerializeField]
-    Vector2 mapSize;
+    Vector2                 mapSize;
 
     [SerializeField]
-    float cameraMoveSpeed;
-    float height;
-    float width;
+    float                   cameraMoveSpeed;
+    float                   height;
+    float                   width;
 
     void Start()
     {

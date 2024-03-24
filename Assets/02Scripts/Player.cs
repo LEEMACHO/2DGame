@@ -6,27 +6,28 @@ using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour
 {
-    public float health;
+    [Header("# Player State")]
+    public float        health;
+    public float        speed;
+    public float        jumpPower;
+    public Vector2      inputVec;
 
-    public float speed;
-    public float jumpPower;
-    public Vector2 inputVec;
-    public float jumpdelay;
 
+    bool                isFloor;
+    bool                isDoubleJump;
+    bool                isDamage;
+    public bool         isDead;
 
-    bool isFloor;
-    bool isDoubleJump;
-    bool isDamage;
-
-    Rigidbody2D rigid;
-    SpriteRenderer spriter;
-    Animator anim;
+    Rigidbody2D         rigid;
+    SpriteRenderer      spriter;
+    Animator            anim;
 
     private void Awake()
     {
         rigid = GetComponent<Rigidbody2D>();
         spriter = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
+        isDead = false;
     }
 
     private void Update()
@@ -52,6 +53,11 @@ public class Player : MonoBehaviour
 
     void Move()
     {
+        if (isDead)
+        {
+            rigid.velocity = Vector2.zero;
+            return;
+        }
         float moveInput = Input.GetAxisRaw("Horizontal");
         rigid.velocity = new Vector2(moveInput * speed, rigid.velocity.y);
         anim.SetBool("isRun", true);
@@ -64,7 +70,10 @@ public class Player : MonoBehaviour
 
     void Jump()
     {
-        if (rigid.velocity.y == 0 || (rigid.velocity.y != 0 && !anim.GetBool("Jump")))
+        if (isDead)
+            return;
+
+        if ((rigid.velocity.y == 0 || (rigid.velocity.y != 0 && !anim.GetBool("Jump"))) )
         {
             isFloor = true;
             anim.SetBool("Jump", false);
@@ -76,7 +85,7 @@ public class Player : MonoBehaviour
             isDoubleJump = true;
 
 
-        if (Input.GetButtonDown("Jump") && !anim.GetBool("Jump") && isFloor )
+        if (Input.GetButtonDown("Jump") && !anim.GetBool("Jump") && isFloor)
         {
             rigid.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
             anim.SetBool("Jump",true);
@@ -97,37 +106,56 @@ public class Player : MonoBehaviour
     {
         if (collision.CompareTag("OutLine"))
         {
-            StageManager.instance.Retry();
-            health--;
-            if(health == 0)
-            {
-                Debug.Log("게임 종료");
-            }
-        }
-        else if(collision.CompareTag("Trap") && !isDamage)
-        {
+            StopCoroutine(OnDamage());
             StartCoroutine(OnDamage());
-        }
-        else if(collision.CompareTag("Trampoline"))
-        {
-            anim.SetBool("Jump", false);
-            rigid.velocity = Vector2.zero;
-            rigid.AddForce(transform.up * 20, ForceMode2D.Impulse);
 
+            GameManager.instance.Retry();
         }
+        else if(collision.CompareTag("Finish"))
+        {
+            GameManager.instance.PlayerSpawn();
+        }
+    }
+
+    public void TrapTrigger()
+    {
+        if (isDamage)
+            return;
+        StartCoroutine(OnDamage());
+    }
+
+    public void WIndJump(float power)
+    {
+        rigid.AddForce(transform.up * power, ForceMode2D.Force);
+    }
+    public void TrampolineJump(float power)
+    {
+        anim.SetBool("Jump", false);
+        rigid.velocity = Vector2.zero;
+        rigid.AddForce(transform.up * power, ForceMode2D.Impulse);
     }
 
     IEnumerator OnDamage()
     {
+        health--;
+
+        if (health<1)
+        {
+            OnDie();
+        }
 
         anim.SetTrigger("Hit");
         isDamage = true;
-        health--;
-
 
         yield return new WaitForSeconds(0.5f);
 
         isDamage = false;
     }
 
+    void OnDie()
+    {
+        anim.StopPlayback();
+        isDead = true;
+        GameManager.instance.GameOver();
+    }
 }
