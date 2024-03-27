@@ -7,10 +7,10 @@ public class RepeatMovement : MonoBehaviour
     public Transform                startPos;
     public Transform                endPos;
     public float                    speed;
-
     public float                    delay;
 
-    bool                            movingToEnd = true;
+    public bool                            movingToEnd = true;
+
 
     private void Awake()
     {

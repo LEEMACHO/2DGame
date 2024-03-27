@@ -12,10 +12,14 @@ public class Player : MonoBehaviour
     public float        jumpPower;
     public Vector2      inputVec;
 
+    float platformSpeed;
+    Vector2 platformVec;
 
     bool                isFloor;
     bool                isDoubleJump;
     bool                isDamage;
+    bool                isPlatform;
+    bool                isMove;
     public bool         isDead;
 
     Rigidbody2D         rigid;
@@ -35,6 +39,8 @@ public class Player : MonoBehaviour
         Move();
         Jump();
         Flipx();
+        if (isPlatform && isMove)
+            MovingPlatform();
     }
 
     private void FixedUpdate()
@@ -54,18 +60,19 @@ public class Player : MonoBehaviour
     void Move()
     {
         if (isDead)
-        {
-            rigid.velocity = Vector2.zero;
             return;
-        }
+        
         float moveInput = Input.GetAxisRaw("Horizontal");
         rigid.velocity = new Vector2(moveInput * speed, rigid.velocity.y);
         anim.SetBool("isRun", true);
-
         inputVec = new Vector2(moveInput * speed, rigid.velocity.y).normalized;
+        isMove = false;
 
         if (inputVec == Vector2.zero)
+        {
+            isMove = true;
             anim.SetBool("isRun", false);
+        }
     }
 
     void Jump()
@@ -73,7 +80,7 @@ public class Player : MonoBehaviour
         if (isDead)
             return;
 
-        if ((rigid.velocity.y == 0 || (rigid.velocity.y != 0 && !anim.GetBool("Jump"))) )
+        if (rigid.velocity.y == 0 || (rigid.velocity.y != 0 && !anim.GetBool("Jump")))  // Velocity.y = 0 공중이 아니 경우 || 공중이지만 점프 상태가 아닌 경우
         {
             isFloor = true;
             anim.SetBool("Jump", false);
@@ -81,12 +88,14 @@ public class Player : MonoBehaviour
         else
             isFloor = false;
 
-        if (isFloor)
-            isDoubleJump = true;
+        //if (isFloor)
+        //    isDoubleJump = true;
 
 
         if (Input.GetButtonDown("Jump") && !anim.GetBool("Jump") && isFloor)
         {
+            isPlatform = false;
+            Debug.Log("Jump");
             rigid.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
             anim.SetBool("Jump",true);
 
@@ -102,19 +111,38 @@ public class Player : MonoBehaviour
         }
     }
 
+    void MovingPlatform()
+    {
+            rigid.velocity = platformVec.normalized * platformSpeed;
+    }
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("OutLine"))
-        {
-            StopCoroutine(OnDamage());
-            StartCoroutine(OnDamage());
-
             GameManager.instance.Retry();
-        }
-        else if(collision.CompareTag("Finish"))
-        {
+        else if (collision.CompareTag("Finish"))
             GameManager.instance.PlayerSpawn();
+
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.collider.gameObject.CompareTag("Platform"))
+            isPlatform = true;
+    }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (collision.collider.gameObject.CompareTag("Platform"))
+        {
+            platformSpeed = collision.gameObject.GetComponent<PlatformCtr>().speed;
+            platformVec = collision.gameObject.GetComponent<PlatformCtr>().movementVector;
         }
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.collider.gameObject.CompareTag("Platform"))
+            isPlatform = false;
     }
 
     public void TrapTrigger()
@@ -155,6 +183,7 @@ public class Player : MonoBehaviour
     void OnDie()
     {
         anim.StopPlayback();
+        gameObject.SetActive(false);
         isDead = true;
         GameManager.instance.GameOver();
     }
