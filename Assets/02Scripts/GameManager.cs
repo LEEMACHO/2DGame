@@ -26,6 +26,7 @@ public class GameManager : MonoBehaviour
 
         stageIndex = 0;
 
+        player.TrapTrigger();
     }
 
     public void PlayerSpawn()

@@ -9,7 +9,7 @@ public class RepeatMovement : MonoBehaviour
     public float                    speed;
     public float                    delay;
 
-    public bool                            movingToEnd = true;
+    public bool                     movingToEnd = true;
 
 
     private void Awake()

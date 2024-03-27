@@ -39,8 +39,7 @@ public class Player : MonoBehaviour
         Move();
         Jump();
         Flipx();
-        if (isPlatform && isMove)
-            MovingPlatform();
+        MovingPlatform();
     }
 
     private void FixedUpdate()
@@ -109,10 +108,14 @@ public class Player : MonoBehaviour
 
             isDoubleJump = false;
         }
+
+        if(isPlatform)
+            anim.SetBool("Jump", false);
     }
 
     void MovingPlatform()
     {
+        if (isPlatform && isMove)
             rigid.velocity = platformVec.normalized * platformSpeed;
     }
     private void OnTriggerEnter2D(Collider2D collision)
@@ -128,6 +131,7 @@ public class Player : MonoBehaviour
     {
         if (collision.collider.gameObject.CompareTag("Platform"))
             isPlatform = true;
+
     }
 
     private void OnCollisionStay2D(Collision2D collision)
@@ -151,7 +155,6 @@ public class Player : MonoBehaviour
             return;
         StartCoroutine(OnDamage());
     }
-
     public void WIndJump(float power)
     {
         rigid.AddForce(transform.up * power, ForceMode2D.Force);
