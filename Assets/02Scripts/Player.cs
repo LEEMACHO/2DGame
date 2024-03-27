@@ -72,6 +72,8 @@ public class Player : MonoBehaviour
             isMove = true;
             anim.SetBool("isRun", false);
         }
+        if(isPlatform && (inputVec.x == 0))
+            anim.SetBool("isRun", false);
     }
 
     void Jump()
