@@ -9,9 +9,12 @@ public class GameManager : MonoBehaviour
     public Player               player;
     public CameraCtr            cameraCtr;
 
+    public RuntimeAnimatorController[] animCon;
+
     [Header("# Stage Info")]
     public GameObject[]         stages;
     public int                  stageIndex;
+
 
     private void Awake()
     {
@@ -40,7 +43,6 @@ public class GameManager : MonoBehaviour
         }
 
     }
-
     public void GameOver()
     {
         Debug.Log("Game Over");

@@ -20,6 +20,7 @@ public class Player : MonoBehaviour
     bool                isDamage;
     bool                isPlatform;
     bool                isMove;
+    bool                isAtt;
     public bool         isDead;
 
     Rigidbody2D         rigid;
@@ -44,7 +45,7 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
-        //Isfloor();
+        EnemyCheck();
     }
 
 
@@ -55,7 +56,6 @@ public class Player : MonoBehaviour
             spriter.flipX = inputVec.x < 0;
         }
     }
-
     void Move()
     {
         if (isDead)
@@ -75,7 +75,6 @@ public class Player : MonoBehaviour
         if(isPlatform && (inputVec.x == 0))
             anim.SetBool("isRun", false);
     }
-
     void Jump()
     {
         if (isDead)
@@ -114,7 +113,6 @@ public class Player : MonoBehaviour
         if(isPlatform)
             anim.SetBool("Jump", false);
     }
-
     void MovingPlatform()
     {
         if (isPlatform && isMove)
@@ -125,17 +123,25 @@ public class Player : MonoBehaviour
         if (collision.CompareTag("OutLine"))
             GameManager.instance.Retry();
         else if (collision.CompareTag("Finish"))
-            GameManager.instance.PlayerSpawn();
+            GameManager.instance.PlayerSpawn();     
+
+        if(collision.CompareTag("EnemyBullet"))
+            StartCoroutine(OnDamage());
 
     }
-
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.collider.gameObject.CompareTag("Platform"))
             isPlatform = true;
 
+        if(collision.collider.gameObject.CompareTag("Enemy"))
+        {
+            if (isAtt)
+                collision.gameObject.GetComponent<Enemy>().OnDamage();
+            else
+                StartCoroutine(OnDamage());
+        }
     }
-
     private void OnCollisionStay2D(Collision2D collision)
     {
         if (collision.collider.gameObject.CompareTag("Platform"))
@@ -144,13 +150,16 @@ public class Player : MonoBehaviour
             platformVec = collision.gameObject.GetComponent<PlatformCtr>().movementVector;
         }
     }
-
     private void OnCollisionExit2D(Collision2D collision)
     {
         if (collision.collider.gameObject.CompareTag("Platform"))
             isPlatform = false;
     }
-
+    void EnemyCheck()
+    {
+        Debug.DrawRay(transform.position, Vector3.down, new Color(0, 1, 0));
+        isAtt = Physics2D.Raycast(transform.position, Vector3.down, 1, LayerMask.GetMask("Enemy"));
+    }
     public void TrapTrigger()
     {
         if (isDamage)
@@ -167,7 +176,6 @@ public class Player : MonoBehaviour
         rigid.velocity = Vector2.zero;
         rigid.AddForce(transform.up * power, ForceMode2D.Impulse);
     }
-
     IEnumerator OnDamage()
     {
         health--;
@@ -184,7 +192,6 @@ public class Player : MonoBehaviour
 
         isDamage = false;
     }
-
     void OnDie()
     {
         anim.StopPlayback();

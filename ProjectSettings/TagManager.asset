@@ -12,15 +12,17 @@ TagManager:
   - Trampoline
   - Fan
   - Platform
+  - Enemy
+  - EnemyBullet
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Player
   - Water
   - UI
   - Floor
-  - 
+  - Enemy
   - 
   - 
   - 
