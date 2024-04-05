@@ -10,19 +10,19 @@ public class Enemy : MonoBehaviour
     public float                        health;
     public float                        maxHealth;
     public float                        speed = 1f;
+    [Header("# Enemy Info")]
     [SerializeReference]
     int                                 nextMove = 1;
     float                               delay;
-    [SerializeReference]
-    private float                       thinkDelay = 5f;
-    //bool                                isThink;
+    bool                                dir;
+
 
     Rigidbody2D                         rigid;
     Animator                            anim;
     SpriteRenderer                      spriter;
-    public Transform bulletPos;
-    public GameObject bullet;
-    public float bulletSpeed;
+    public Transform                    bulletPos;
+    public GameObject                   bullet;
+    public float                        bulletSpeed;
     //RuntimeAnimatorController[] animCons;
 
     private void Awake()
@@ -35,7 +35,8 @@ public class Enemy : MonoBehaviour
         //if (enemyType == Type.MoveEnemy || enemyType == Type.ReactionEneny)
         //    StartCoroutine(OnThink());
     }
-    private void Update()
+
+    private void FixedUpdate()
     {
         Action();
     }
@@ -48,20 +49,17 @@ public class Enemy : MonoBehaviour
             case Type.ReactionEneny:
             case Type.MoveEnemy:
                 //Move
-                rigid.velocity = new Vector2(nextMove * speed, rigid.velocity.y); //nextMove 에 0:멈춤 -1:왼쪽 1:오른쪽 으로 이동 
-                anim.SetBool(enemyType == Type.MoveEnemy ? "isRun":"isWalk", true);
+                rigid.velocity = Vector2.right * speed * nextMove;
+                anim.SetBool(enemyType == Type.MoveEnemy ? "isRun" : "isWalk",true);
+                spriter.flipX = dir = nextMove == 1 ? true : false;
 
-                if (nextMove == 0)
-                    anim.SetBool(enemyType == Type.MoveEnemy ? "isRun":"isWalk", false);
-
-                Vector2 frontVec = new Vector2(rigid.position.x + nextMove * 0.6f, rigid.position.y);
+                Vector2 frontVec = new Vector2(rigid.position.x + nextMove * 1f, rigid.position.y);
                 Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
                 RaycastHit2D raycast = Physics2D.Raycast(frontVec, Vector3.down, 1, LayerMask.GetMask("Floor"));
 
                 if (raycast.collider == null)
-                {
-                    Turn();
-                }
+                    nextMove = nextMove * -1;
+
                 break;
 
             case Type.StandEnemy:
@@ -101,36 +99,31 @@ public class Enemy : MonoBehaviour
     //    //Think(); : 재귀함수 : 딜레이를 쓰지 않으면 CPU과부화 되므로 재귀함수쓸 때는 항상 주의 ->Think()를 직접 호출하는 대신 Invoke()사용
     //    Invoke("Think", time); //매개변수로 받은 함수를 time초의 딜레이를 부여하여 재실행 
     //}
+    //IEnumerator OnThink()
+    //{
+    //    //isThink = false;
 
-    IEnumerator OnThink()
-    {
-        //isThink = false;
+    //    yield return new WaitForSeconds(thinkDelay);
+    //    nextMove = Random.Range(-1, 2);
 
-        yield return new WaitForSeconds(thinkDelay);
-        nextMove = Random.Range(-1, 2);
+    //    if (nextMove != 0)
+    //        spriter.flipX = nextMove == 1;
 
-        if (nextMove != 0)
-            spriter.flipX = nextMove == 1;
+    //    float time = Random.Range(1f, thinkDelay);
 
-        float time = Random.Range(1f, thinkDelay);
+    //    yield return new WaitForSeconds(time);
 
-        yield return new WaitForSeconds(time);
-
-        //isThink = true;
-    }
-
-    void Turn()
-    {
-
-        nextMove = nextMove * (-1); //우리가 직접 방향을 바꾸어 주었으니 Think는 잠시 멈추어야함
-        spriter.flipX = nextMove == 1;
-
-        //StopCoroutine(OnThink());
-        //StartCoroutine(OnThink());
-
-    }
+    //    //isThink = true;
+    //}
     public void OnDamage()
     {
+        if (enemyType == Type.ReactionEneny)
+        {
+            anim.SetBool("isRun", true);
+            anim.SetBool("isWalk", false);
+            speed++;
+        }
+
         health--;
         speed++;
 

@@ -28,7 +28,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4176030376919578086}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.3, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -120,7 +120,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f66e5f6d668d9541bc8114ff2737221, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  trapType: 4
+  trapType: 0
   windPower: 0
   trampolinePower: 0
 --- !u!61 &4176030376919578087
@@ -175,9 +175,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4176030377109112883}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7.63, y: 0.5, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1.3, y: 1.3, z: 1.3}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 4176030376919578082}
   - {fileID: 4176030377562032179}
@@ -222,12 +222,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04937abf22e6c9e44aa2d7d39cf78d70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  trapType: 0
   obj: {fileID: 4176030376919578086}
   coll: {fileID: 4176030376919578087}
   fallPos: {fileID: 4176030377562032179}
   fallSpeed: 5
   riseSpeed: 2
   delayTime: 2
+  rotSpeed: 0
 --- !u!1 &4176030377562032178
 GameObject:
   m_ObjectHideFlags: 0

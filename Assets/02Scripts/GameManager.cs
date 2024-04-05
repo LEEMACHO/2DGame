@@ -4,21 +4,25 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager   instance;
+    public static GameManager           instance;
 
-    public Player               player;
-    public CameraCtr            cameraCtr;
-
-    public RuntimeAnimatorController[] animCon;
+    public Player                       player;
+    public CameraCtr                    cameraCtr;
 
     [Header("# Stage Info")]
-    public GameObject[]         stages;
-    public int                  stageIndex;
+    public GameObject[]                 stages;
+    public int                          stageIndex;
 
+    public int                          score;
 
     private void Awake()
     {
         instance = this;
+    }
+
+    private void Start()
+    {
+        player.transform.position = stages[0].transform.GetChild(1).position;
     }
 
     public void Retry()
@@ -43,6 +47,8 @@ public class GameManager : MonoBehaviour
         }
 
     }
+
+    
     public void GameOver()
     {
         Debug.Log("Game Over");

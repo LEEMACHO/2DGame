@@ -83,7 +83,7 @@ public class Player : MonoBehaviour
         if (isDead)
             return;
 
-        if (rigid.velocity.y == 0 || (rigid.velocity.y != 0 && !anim.GetBool("Jump")))  // Velocity.y = 0 °øÁßÀÌ ¾Æ´Ï °æ¿ì || °øÁßÀÌÁö¸¸ Á¡ÇÁ »óÅÂ°¡ ¾Æ´Ñ °æ¿ì
+        if (rigid.velocity.y == 0 || (rigid.velocity.y != 0 && !anim.GetBool("Jump")))  // Velocity.y = 0 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Æ´ï¿½ ï¿½ï¿½ï¿½ || ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â°ï¿½ ï¿½Æ´ï¿½ ï¿½ï¿½ï¿½
         {
             isFloor = true;
             anim.SetBool("Jump", false);
@@ -125,7 +125,9 @@ public class Player : MonoBehaviour
     {
         Debug.DrawRay(transform.position, Vector3.down, new Color(0, 1, 0));
         isAtt = Physics2D.Raycast(transform.position, Vector3.down, 1, LayerMask.GetMask("Enemy"));
+        isDamage = isAtt;
     }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("OutLine"))
@@ -139,13 +141,7 @@ public class Player : MonoBehaviour
             collision.gameObject.SetActive(false);
 
         }
-    }
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.collider.gameObject.CompareTag("Platform"))
-            isPlatform = true;
-
-        if(collision.collider.gameObject.CompareTag("Enemy"))
+        if (collision.CompareTag("Enemy"))
         {
             if (isAtt)
             {
@@ -156,6 +152,11 @@ public class Player : MonoBehaviour
             else
                 StartCoroutine(OnDamage());
         }
+    }
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.collider.gameObject.CompareTag("Platform"))
+            isPlatform = true;
     }
     private void OnCollisionStay2D(Collision2D collision)
     {
