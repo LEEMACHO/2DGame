@@ -4,16 +4,17 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager           instance;
+    public static GameManager instance;
 
-    public Player                       player;
-    public CameraCtr                    cameraCtr;
+    public Player player;
+    public CameraCtr cameraCtr;
 
     [Header("# Stage Info")]
-    public GameObject[]                 stages;
-    public int                          stageIndex;
+    public GameObject[]             stages;
+    [SerializeReference]
+    int                             stageIndex;
 
-    public int                          score;
+    public int                      score;
 
     private void Awake()
     {
@@ -27,11 +28,13 @@ public class GameManager : MonoBehaviour
 
     public void Retry()
     {
-        cameraCtr.center = stages[0].transform.GetChild(0).position;
-
-        player.transform.position = stages[0].transform.GetChild(1).position;
-
         stageIndex = 0;
+
+        cameraCtr.center = stages[stageIndex].transform.GetChild(0).position;
+
+        player.transform.position = stages[stageIndex].transform.GetChild(1).position;
+
+
 
         player.TrapTrigger();
     }
