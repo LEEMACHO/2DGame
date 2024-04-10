@@ -49,16 +49,16 @@ public class Enemy : MonoBehaviour
             case Type.ReactionEneny:
             case Type.MoveEnemy:
                 //Move
-                rigid.velocity = Vector2.right * speed * nextMove;
+                rigid.velocity = new Vector2(speed * nextMove, rigid.velocity.y);
                 anim.SetBool(enemyType == Type.MoveEnemy ? "isRun" : "isWalk",true);
                 spriter.flipX = dir = nextMove == 1 ? true : false;
 
-                Vector2 frontVec = new Vector2(rigid.position.x + nextMove * 1f, rigid.position.y);
+                Vector2 frontVec = new Vector2(rigid.position.x + nextMove * 0.6f, rigid.position.y);
                 Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
                 RaycastHit2D raycast = Physics2D.Raycast(frontVec, Vector3.down, 1, LayerMask.GetMask("Floor"));
 
-                if (raycast.collider == null)
-                    nextMove = nextMove * -1;
+                if (raycast.collider == null || rigid.velocity == Vector2.zero)
+                    nextMove *= -1;
 
                 break;
 
