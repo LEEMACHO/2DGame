@@ -17,6 +17,7 @@ TagManager:
   - Fruits
   - Props
   - PlayerBullet
+  - BrokenPlatform
   layers:
   - Default
   - TransparentFX
