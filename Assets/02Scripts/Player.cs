@@ -6,13 +6,13 @@ using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour
 {
-    public Collider2D coll;
-
     [Header("# Player State")]
     public float        health;
     public float        speed;
     public float        jumpPower;
     public Vector2      inputVec;
+    [SerializeReference]
+    float               damageDelay;
 
     float               platformSpeed;
     Vector2             platformVec;
@@ -42,16 +42,13 @@ public class Player : MonoBehaviour
     {
         Move();
         Jump();
-        Flipx();
-        MovingPlatform();
     }
 
     private void FixedUpdate()
     {
-        EnemyCheck();
+        Flipx();
+        MovingPlatform();
     }
-
-
     void Flipx()
     {
         if (inputVec.x != 0)
@@ -91,9 +88,6 @@ public class Player : MonoBehaviour
         else
             isFloor = false;
 
-        //if (isFloor)
-        //    isDoubleJump = true;
-
 
         if (Input.GetButtonDown("Jump") && !anim.GetBool("Jump") && isFloor)
         {
@@ -121,42 +115,44 @@ public class Player : MonoBehaviour
         if (isPlatform && isMove)
             rigid.velocity = platformVec.normalized * platformSpeed;
     }
-    void EnemyCheck()
-    {
-        Debug.DrawRay(transform.position, Vector3.down, new Color(0, 1, 0));
-        isAtt = Physics2D.Raycast(transform.position, Vector3.down, 1, LayerMask.GetMask("Enemy"));
-        isDamage = isAtt;
-    }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("OutLine"))
             GameManager.instance.Retry();
-        else if (collision.CompareTag("Finish"))
+        if (collision.CompareTag("Finish"))
             GameManager.instance.PlayerSpawn();
 
         if (collision.CompareTag("EnemyBullet"))
         {
             StartCoroutine(OnDamage());
             collision.gameObject.SetActive(false);
+        }
 
-        }
-        if (collision.CompareTag("Enemy"))
-        {
-            if (isAtt)
-            {
-                collision.gameObject.GetComponent<Enemy>().OnDamage();
-                rigid.velocity = Vector2.zero;
-                rigid.AddForce(transform.up * 10f, ForceMode2D.Impulse);
-            }
-            else
-                StartCoroutine(OnDamage());
-        }
     }
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.collider.gameObject.CompareTag("Platform"))
             isPlatform = true;
+
+        if (collision.collider.gameObject.CompareTag("Enemy"))
+        {
+            if (isAtt)
+            {
+                collision.gameObject.GetComponent<Enemy>().Ondamage();
+                rigid.velocity = Vector2.zero;
+                rigid.AddForce(transform.up * 10f, ForceMode2D.Impulse);
+                isAtt = false;
+            }
+            else if(!isDamage)
+            {
+                health--;
+                anim.SetTrigger("Hit");
+
+                StartCoroutine(OnDamage());
+            }
+
+        }
     }
     private void OnCollisionStay2D(Collision2D collision)
     {
@@ -174,8 +170,6 @@ public class Player : MonoBehaviour
 
     public void TrapTrigger()
     {
-        if (isDamage)
-            return;
         StartCoroutine(OnDamage());
     }
     public void WIndJump(float power)
@@ -190,18 +184,12 @@ public class Player : MonoBehaviour
     }
     IEnumerator OnDamage()
     {
-        health--;
-
-        if (health<1)
-        {
-            OnDie();
-        }
-
-        anim.SetTrigger("Hit");
         isDamage = true;
 
-        yield return new WaitForSeconds(0.5f);
+        if (health == 0)
+            OnDie();
 
+        yield return new WaitForSeconds(damageDelay);
         isDamage = false;
     }
     void OnDie()

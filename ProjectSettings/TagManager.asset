@@ -16,6 +16,7 @@ TagManager:
   - EnemyBullet
   - Fruits
   - Props
+  - PlayerBullet
   layers:
   - Default
   - TransparentFX

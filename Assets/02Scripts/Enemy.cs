@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 public class Enemy : MonoBehaviour
 {
-    public enum Type { StandEnemy, MoveEnemy, ReactionEneny, AttEnemy}
+    public enum Type { StandEnemy, MoveEnemy, ReactionEneny, AttEnemy, SlimeEnemy}
     public Type enemyType;
 
     [Header("# Enemy State")]
@@ -14,6 +14,10 @@ public class Enemy : MonoBehaviour
     [SerializeReference]
     int                                 nextMove = 1;
     float                               delay;
+    [SerializeReference]
+    float                               damageDelay;
+
+    public bool                         isDamage;
     bool                                dir;
 
 
@@ -47,17 +51,18 @@ public class Enemy : MonoBehaviour
         switch (enemyType)
         {
             case Type.ReactionEneny:
+            case Type.SlimeEnemy:
             case Type.MoveEnemy:
                 //Move
                 rigid.velocity = new Vector2(speed * nextMove, rigid.velocity.y);
-                anim.SetBool(enemyType == Type.MoveEnemy ? "isRun" : "isWalk",true);
+                anim.SetBool(enemyType == Type.ReactionEneny ? "isWalk" : "isRun",true);
                 spriter.flipX = dir = nextMove == 1 ? true : false;
 
                 Vector2 frontVec = new Vector2(rigid.position.x + nextMove * 0.6f, rigid.position.y);
                 Debug.DrawRay(frontVec, Vector3.down, new Color(0, 1, 0));
                 RaycastHit2D raycast = Physics2D.Raycast(frontVec, Vector3.down, 1, LayerMask.GetMask("Floor"));
 
-                if (raycast.collider == null || rigid.velocity == Vector2.zero)
+                if (raycast.collider == null)
                     nextMove *= -1;
 
                 break;
@@ -77,62 +82,93 @@ public class Enemy : MonoBehaviour
 
 
     }
-    //void Think()
-    //{//몬스터가 스스로 생각해서 판단 (-1:왼쪽이동 ,1:오른쪽 이동 ,0:멈춤  으로 3가지 행동을 판단)
 
-    //    //Set Next Active
-    //    //Random.Range : 최소<= 난수 <최대 /범위의 랜덤 수를 생성(최대는 제외이므로 주의해야함)
-    //    nextMove = Random.Range(-1, 2);
-
-    //    //Sprite Animation
-    //    //WalkSpeed변수를 nextMove로 초기화 
-    //    //anim.SetInteger("WalkSpeed", nextMove);
-
-
-    //    //Flip Sprite
-    //    if (nextMove != 0) //서있을 때 굳이 방향을 바꿀 필요가 없음 
-    //        spriter.flipX = nextMove == 1; //nextmove 가 1이면 방향을 반대로 변경  
-
-
-    //    //Recursive (재귀함수는 가장 아래에 쓰는게 기본적) 
-    //    float time = Random.Range(1f, thinkDelay); //생각하는 시간을 랜덤으로 부여 
-    //    //Think(); : 재귀함수 : 딜레이를 쓰지 않으면 CPU과부화 되므로 재귀함수쓸 때는 항상 주의 ->Think()를 직접 호출하는 대신 Invoke()사용
-    //    Invoke("Think", time); //매개변수로 받은 함수를 time초의 딜레이를 부여하여 재실행 
-    //}
-    //IEnumerator OnThink()
-    //{
-    //    //isThink = false;
-
-    //    yield return new WaitForSeconds(thinkDelay);
-    //    nextMove = Random.Range(-1, 2);
-
-    //    if (nextMove != 0)
-    //        spriter.flipX = nextMove == 1;
-
-    //    float time = Random.Range(1f, thinkDelay);
-
-    //    yield return new WaitForSeconds(time);
-
-    //    //isThink = true;
-    //}
-    public void OnDamage()
+    private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (!collision.CompareTag("PlayerBullet"))
+            return;
+        
+    }
+
+    public void Ondamage()
+    {
+        health--;
+        anim.SetTrigger("Hit");
+        isDamage = false;
+
+        if (health == 0)
+            OnDie();
+
+        if (enemyType == Type.SlimeEnemy)
+        {
+            GameObject[] instantObj = new GameObject[2];
+            for (int index = 0; index < 2; index++)
+            {
+                instantObj[index] = Instantiate(gameObject, new Vector3(transform.position.x + Random.Range(-1, 2), transform.position.y, transform.position.z), transform.rotation);
+                Debug.Log(instantObj[index].gameObject.transform.position);
+                Enemy enemyObj = instantObj[index].GetComponent<Enemy>();
+                enemyObj.maxHealth = 1;
+                enemyObj.health = 1;
+                enemyObj.speed = 2;
+                enemyObj.nextMove = Random.Range(-1, 1);
+                if (enemyObj.nextMove == 0)
+                    enemyObj.nextMove = 1;
+                enemyObj.transform.localScale = new Vector3(0.7f, 0.7f, 0.7f);
+            }
+            gameObject.SetActive(false);
+        }
+
         if (enemyType == Type.ReactionEneny)
         {
             anim.SetBool("isRun", true);
             anim.SetBool("isWalk", false);
-            speed++;
+            speed *= 2;
         }
 
-        health--;
-        speed++;
+    }
 
-        if (health < 1)
+    /*
+    IEnumerator OnDamage()
+    {
+        health--;
+        anim.SetTrigger("Hit");
+        isDamage = false;
+
+        if (health == 0)
             OnDie();
 
-        anim.SetTrigger("Hit");
-        
+        if (enemyType == Type.SlimeEnemy)
+        {
+            GameObject[] instantObj = new GameObject[2];
+            for (int index = 0; index < 2; index++)
+            {
+                instantObj[index] = Instantiate(gameObject, new Vector3(transform.position.x + Random.Range(-1, 2), transform.position.y, transform.position.z), transform.rotation);
+                Debug.Log(instantObj[index].gameObject.transform.position);
+                Enemy enemyObj = instantObj[index].GetComponent<Enemy>();
+                enemyObj.maxHealth = 1;
+                enemyObj.health = 1;
+                enemyObj.speed = 2;
+                enemyObj.nextMove = Random.Range(-1, 1);
+                if (enemyObj.nextMove == 0)
+                    enemyObj.nextMove = 1;
+                enemyObj.transform.localScale = new Vector3(0.7f, 0.7f, 0.7f);
+            }
+            gameObject.SetActive(false);
+        }
+
+        if (enemyType == Type.ReactionEneny)
+        {
+            anim.SetBool("isRun", true);
+            anim.SetBool("isWalk", false);
+            speed *= 2;
+        }
+
+        yield return new WaitForSeconds(damageDelay);
+
+
     }
+    */
+
     void OnDie()
     {
         gameObject.SetActive(false);

@@ -169,8 +169,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemyType: 1
-  health: 2
-  maxHealth: 2
+  health: 1
+  maxHealth: 1
   speed: 1
   nextMove: 1
   bulletPos: {fileID: 0}
