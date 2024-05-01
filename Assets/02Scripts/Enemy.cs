@@ -15,7 +15,7 @@ public class Enemy : MonoBehaviour
     int                                 nextMove = 1;
     float                               delay;
     [SerializeReference]
-    float                               damageDelay;
+    float                               AttDelay;
 
     public bool                         isDamage;
     bool                                dir;
@@ -70,7 +70,7 @@ public class Enemy : MonoBehaviour
             case Type.StandEnemy:
                 delay += Time.deltaTime;
 
-                if (delay > 1f)
+                if (delay > AttDelay)
                 {
                     GameObject instantBullet = Instantiate(bullet, bulletPos.transform.position, bulletPos.transform.rotation);
                     Rigidbody2D rigidBullet = instantBullet.GetComponent<Rigidbody2D>();

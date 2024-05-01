@@ -5,11 +5,11 @@ using UnityEngine;
 public class BrokenPlatform : MonoBehaviour
 {
     [SerializeReference]
-    float       delay;
+    float           delay;
 
-    bool isOn;
+    bool            isOn;
 
-    SpriteRenderer sprite;
+    SpriteRenderer  sprite;
 
     private void Awake()
     {
@@ -36,7 +36,16 @@ public class BrokenPlatform : MonoBehaviour
 
     IEnumerator Broken()
     {
-        yield return new WaitForSeconds(delay);
+
+        sprite.flipX = true;
+        yield return new WaitForSeconds(0.5f);
+        sprite.flipX = false;
+        yield return new WaitForSeconds(0.5f);
+        sprite.flipX = true;
+        yield return new WaitForSeconds(0.5f);
+        sprite.flipX = false;
+        yield return new WaitForSeconds(0.5f);
+
         gameObject.GetComponent<SpriteRenderer>().enabled = false;
         gameObject.GetComponent<BoxCollider2D>().enabled = false;
 

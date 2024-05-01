@@ -1,13 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager instance;
+    public static GameManager       instance;
+    [Header("# Menu Info")]
+    [SerializeReference]
+    GameObject                      MenuObj;
+    public GameObject               MenuPanel;
 
-    public Player player;
-    public CameraCtr cameraCtr;
+    [Header("# Start Info")]
+    public Player                   player;
+    public CameraCtr                cameraCtr;
 
     [Header("# Stage Info")]
     public GameObject[]             stages;
@@ -23,6 +29,17 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+
+    }
+
+
+    public void GameStart()
+    {
+        MenuObj.SetActive(false);
+        MenuPanel.SetActive(false);
+
+        player.gameObject.SetActive(true);
+        cameraCtr.gameObject.SetActive(true);
         player.transform.position = stages[0].transform.GetChild(1).position;
     }
 

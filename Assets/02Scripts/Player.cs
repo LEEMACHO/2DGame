@@ -11,12 +11,23 @@ public class Player : MonoBehaviour
     public float        speed;
     public float        jumpPower;
     public Vector2      inputVec;
+
+    [Header("# Player Info")]
     [SerializeReference]
     float               damageDelay;
-
+    float               dir;                    // -1 왼쪽, +1 오른쪽
     float               platformSpeed;
+    [SerializeReference]
+    float               wallDistance;
+    [SerializeReference]
+    float               wallSpeed;
     Vector2             platformVec;
+    Vector2             jumpVec;
+    [SerializeReference]
+    float wallJumpPower;
 
+
+    [SerializeReference]
     bool                isFloor;
     bool                isDoubleJump;
     bool                isDamage;
@@ -24,6 +35,8 @@ public class Player : MonoBehaviour
     bool                isMove;
     public bool         isAtt;
     bool                isDead;
+    [SerializeReference]
+    bool                isWall;
 
     Rigidbody2D         rigid;
     SpriteRenderer      spriter;
@@ -38,6 +51,11 @@ public class Player : MonoBehaviour
 
     }
 
+    private void Start()
+    {
+        jumpVec = new Vector2(1, 1);
+    }
+
     private void Update()
     {
         Move();
@@ -48,6 +66,7 @@ public class Player : MonoBehaviour
     {
         Flipx();
         MovingPlatform();
+        WallJump();
     }
     void Flipx()
     {
@@ -58,7 +77,7 @@ public class Player : MonoBehaviour
     }
     void Move()
     {
-        if (isDead)
+        if (isDead || isWall)
             return;
         
         float moveInput = Input.GetAxisRaw("Horizontal");
@@ -80,25 +99,23 @@ public class Player : MonoBehaviour
         if (isDead)
             return;
 
-        if (rigid.velocity.y == 0 || (rigid.velocity.y != 0 && !anim.GetBool("Jump")))  // Velocity.y = 0 ������ �ƴ� ��� || ���������� ���� ���°� �ƴ� ���
+        if (rigid.velocity.y == 0 || (rigid.velocity.y != 0 && !anim.GetBool("isJump")))  // Velocity.y = 0 ������ �ƴ� ��� || ���������� ���� ���°� �ƴ� ���
         {
             isFloor = true;
-            anim.SetBool("Jump", false);
+            anim.SetBool("isJump", false);
         }
         else
             isFloor = false;
 
-
-        if (Input.GetButtonDown("Jump") && !anim.GetBool("Jump") && isFloor)
+        if (Input.GetButtonDown("Jump") && !anim.GetBool("isJump") && isFloor)
         {
             isPlatform = false;
-            Debug.Log("Jump");
-            rigid.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
-            anim.SetBool("Jump",true);
-
+            rigid.velocity = Vector2.zero;
+            rigid.AddForce(isWall == true ? new Vector2(jumpVec.x * wallJumpPower * (-dir), jumpVec.y * wallJumpPower) : Vector2.up * jumpPower, ForceMode2D.Impulse); 
+            anim.SetBool("isJump",true);
             isDoubleJump = true;
         }
-        else if (Input.GetButtonDown("Jump")&& anim.GetBool("Jump") && isDoubleJump)
+        else if (Input.GetButtonDown("Jump")&& anim.GetBool("isJump") && isDoubleJump)
         {
             rigid.velocity = Vector2.zero;
             rigid.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
@@ -107,13 +124,30 @@ public class Player : MonoBehaviour
             isDoubleJump = false;
         }
 
+        if (isWall)
+            anim.SetBool("isJump", false);
+
         if(isPlatform)
-            anim.SetBool("Jump", false);
+            anim.SetBool("isJump", false);
     }
     void MovingPlatform()
     {
         if (isPlatform && isMove)
             rigid.velocity = platformVec.normalized * platformSpeed;
+    }
+    void WallJump()
+    {
+        dir = spriter.flipX == true ? -1 : 1;
+        isWall = Physics2D.Raycast(transform.position, Vector2.right * dir, wallDistance,LayerMask.GetMask("Wall"));
+        Debug.DrawRay(transform.position, Vector3.right * dir, Color.green);
+        anim.SetBool("isWall", isWall);
+
+        if (isWall)
+        {
+            anim.SetBool("isRun", false);
+            rigid.velocity = new Vector2(rigid.velocity.x, rigid.velocity.y * wallSpeed);
+        }
+
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -134,6 +168,9 @@ public class Player : MonoBehaviour
     {
         if (collision.collider.gameObject.CompareTag("Platform"))
             isPlatform = true;
+
+        if (Physics2D.Raycast(transform.position, Vector3.down, 1, LayerMask.GetMask("Floor")))
+            anim.SetBool("isJump", false);
 
         if (collision.collider.gameObject.CompareTag("Enemy"))
         {
@@ -178,7 +215,7 @@ public class Player : MonoBehaviour
     }
     public void TrampolineJump(float power)
     {
-        anim.SetBool("Jump", false);
+        anim.SetBool("isJump", false);
         rigid.velocity = Vector2.zero;
         rigid.AddForce(transform.up * power, ForceMode2D.Impulse);
     }
