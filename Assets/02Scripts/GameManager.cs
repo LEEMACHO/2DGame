@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -37,26 +38,30 @@ public class GameManager : MonoBehaviour
     {
         MenuObj.SetActive(false);
         MenuPanel.SetActive(false);
+        player.Init();
 
         player.gameObject.SetActive(true);
         cameraCtr.gameObject.SetActive(true);
-        player.transform.position = stages[0].transform.GetChild(1).position;
+    }
+
+    void Init()
+    {
+
     }
 
     public void Retry()
     {
-        stageIndex = 0;
+        SceneManager.LoadScene(0);
+    }
 
+    public void Respawn()
+    {
         cameraCtr.center = stages[stageIndex].transform.GetChild(0).position;
 
         player.transform.position = stages[stageIndex].transform.GetChild(1).position;
-
-
-
-        player.TrapTrigger();
     }
 
-    public void PlayerSpawn()
+    public void Nextstage()
     {
         stageIndex++;
         if (stageIndex < stages.Length)
@@ -71,7 +76,21 @@ public class GameManager : MonoBehaviour
     
     public void GameOver()
     {
+        StartCoroutine(GameOverRoutine());
         Debug.Log("Game Over");
+        Retry();
+    }
+
+    IEnumerator GameOverRoutine()
+    {
+
+        yield return new WaitForSeconds(1f);
+
+        MenuObj.SetActive(true);
+        MenuPanel.SetActive(true);
+
+        player.gameObject.SetActive(false);
+        cameraCtr.gameObject.SetActive(false);
     }
 
 }

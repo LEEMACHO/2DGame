@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 public class Player : MonoBehaviour
 {
     [Header("# Player State")]
-    public float        health;
+    public int          health;
     public float        speed;
     public float        jumpPower;
     public Vector2      inputVec;
@@ -47,8 +47,6 @@ public class Player : MonoBehaviour
         rigid = GetComponent<Rigidbody2D>();
         spriter = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
-        isDead = false;
-
     }
 
     private void Start()
@@ -68,6 +66,14 @@ public class Player : MonoBehaviour
         MovingPlatform();
         WallJump();
     }
+
+    public void Init()
+    {
+        isDead = false;
+        health = 3;
+        
+    }
+
     void Flipx()
     {
         if (inputVec.x != 0)
@@ -153,9 +159,15 @@ public class Player : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("OutLine"))
-            GameManager.instance.Retry();
+        {
+            rigid.velocity = Vector2.zero;
+            GameManager.instance.Respawn();
+            StartCoroutine(OnDamage());
+            Debug.Log(collision.gameObject.name);
+        }
+
         if (collision.CompareTag("Finish"))
-            GameManager.instance.PlayerSpawn();
+            GameManager.instance.Nextstage();
 
         if (collision.CompareTag("EnemyBullet"))
         {
@@ -183,9 +195,6 @@ public class Player : MonoBehaviour
             }
             else if(!isDamage)
             {
-                health--;
-                anim.SetTrigger("Hit");
-
                 StartCoroutine(OnDamage());
             }
 
@@ -207,6 +216,7 @@ public class Player : MonoBehaviour
 
     public void TrapTrigger()
     {
+        StopCoroutine(OnDamage());
         StartCoroutine(OnDamage());
     }
     public void WIndJump(float power)
@@ -221,10 +231,12 @@ public class Player : MonoBehaviour
     }
     IEnumerator OnDamage()
     {
-        isDamage = true;
-
-        if (health == 0)
+        if (health <= 0)
             OnDie();
+
+        isDamage = true;
+        health--;
+        anim.SetTrigger("Hit");
 
         yield return new WaitForSeconds(damageDelay);
         isDamage = false;

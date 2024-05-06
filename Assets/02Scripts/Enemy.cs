@@ -74,7 +74,8 @@ public class Enemy : MonoBehaviour
                 {
                     GameObject instantBullet = Instantiate(bullet, bulletPos.transform.position, bulletPos.transform.rotation);
                     Rigidbody2D rigidBullet = instantBullet.GetComponent<Rigidbody2D>();
-                    rigidBullet.velocity = bulletPos.right * -bulletSpeed;
+                    nextMove = spriter.flipX == true ? 1 : -1;
+                    rigidBullet.velocity = bulletPos.right * bulletSpeed * nextMove;
                     delay = 0f;
                 }
                 break;
